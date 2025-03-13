@@ -9,15 +9,19 @@ using Newtonsoft.Json.Linq;
 
 namespace GradeBook.GradeBooks
 {
-    public class BaseGradeBook
+    public abstract class BaseGradeBook
     {
+        public GradeBookType Enum { get; set; }
+        public GradeBookType Type { get; set; }
         public string Name { get; set; }
         public List<Student> Students { get; set; }
+        public bool IsWeighted { get; set; }
 
-        public BaseGradeBook(string name)
+        public BaseGradeBook(string name, bool isWeighted)
         {
             Name = name;
             Students = new List<Student>();
+            IsWeighted = isWeighted;
         }
 
         public void AddStudent(Student student)
@@ -106,20 +110,30 @@ namespace GradeBook.GradeBooks
 
         public virtual double GetGPA(char letterGrade, StudentType studentType)
         {
+            double gpa = 0;
             switch (letterGrade)
             {
                 case 'A':
-                    return 4;
+                    gpa = 4;
+                    break;
                 case 'B':
-                    return 3;
+                    gpa = 3;
+                    break;
                 case 'C':
-                    return 2;
+                    gpa = 2;
+                    break;
                 case 'D':
-                    return 1;
+                    gpa = 1;
+                    break;
                 case 'F':
-                    return 0;
+                    gpa = 0;
+                    break;
+                default:
+                    throw new ArgumentException("Invalid letter date");
             }
-            return 0;
+            if (IsWeighted && (studentType == StudentType.Honors || studentType == StudentType.DualEnrolled))
+                gpa += 1;
+            return gpa;
         }
 
         public virtual void CalculateStatistics()
@@ -247,7 +261,7 @@ namespace GradeBook.GradeBooks
                 if (string.IsNullOrEmpty(gradeBookType))
                     gradeBookType = "Standard";
                 else
-                    gradeBookType = Enum.GetName(gradebookEnum, int.Parse(gradeBookType));
+                    gradeBookType = Enums.GradeBookType.GetName(gradebookEnum, int.Parse(gradeBookType));
             }
 
             // Get GradeBook from the GradeBook.GradeBooks namespace
